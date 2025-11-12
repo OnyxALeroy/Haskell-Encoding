@@ -9,21 +9,13 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        ["compress", file] -> do
+        ["compress", input, output] -> do
+            content <- readFile input
+            putStrLn $ compress content output
+        ["decompress", input, output] -> do
             content <- readFile file
-            putStrLn $ compress content
-        ["compress"] -> do
-            content <- hGetContents stdin
-            putStrLn $ compress content
-        ["decompress", file] -> do
-            content <- readFile file
-            putStrLn $ decompress content
-        ["decompress"] -> do
-            content <- hGetContents stdin
-            putStrLn $ decompress content
+            putStrLn $ decompress content output
         _ -> do
             putStrLn "Usage:"
-            putStrLn "  haskell-encoding compress [file]"
-            putStrLn "  haskell-encoding decompress [file]"
-            putStrLn ""
-            putStrLn "If no file is provided, reads from stdin."
+            putStrLn "  haskell-encoding compress <input> <output>"
+            putStrLn "  haskell-encoding decompress <input> <output>"
