@@ -36,7 +36,7 @@ emptyTable :: Int -> [[a]]
 emptyTable n = replicate n []
 
 prependColumn :: [a] -> [[a]] -> [[a]]
-prependColumn col table = zipWith (:) col table
+prependColumn = zipWith (:)
 
 step :: Ord a => [a] -> [[a]] -> [[a]]
 step lastCol table =
