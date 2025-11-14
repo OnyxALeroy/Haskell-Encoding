@@ -1,32 +1,43 @@
 module Compression where
 
 import Huffman (HuffmanTree(..), huffmanEncode, huffmanDecode, buildHuffmanTree)
+import BurrowsWheeler (bwTransform, inverseBWT)
 import Data.List (group, sort)
 
 compress :: String -> String
 compress input =
     let
-        freqList = map (\xs -> (head xs, length xs)) . group . sort $ input
+        (bwtPos, bwtOutput) = bwTransform input
+        freqList = map (\xs -> (head xs, length xs)) . group . sort $ bwtOutput
         leaves = [Leaf c f | (c, f) <- freqList]
         tree = buildHuffmanTree leaves
         codes = huffmanEncode tree
         lookupCode c = case lookup c codes of
             Just code -> code
             Nothing -> error "Character not found in Huffman codes"
-        encoded = concatMap lookupCode input
+        encoded = concatMap lookupCode bwtOutput
         symbolsTable = concatMap (\(c, code) -> escapeChar c ++ ":" ++ code ++ ",") codes
-        result = "SYMBOLS: " ++ init symbolsTable ++ "\nDATA: " ++ encoded
+        result = "FNS: BWT,HUFFMAN\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ encoded
     in result
 
 decompress :: String -> String
 decompress input =
     let
-        symbolsLine = lines input !! 0
+        linesList = lines input
+        fnsLine = findLine "FNS:" linesList
+        symbolsLine = findLine "SYMBOLS:" linesList
+        positionLine = findLine "POSITION:" linesList
+        dataLine = findLine "DATA:" linesList
+
+        functions = parseFns fnsLine
         symbolsStr = drop (length "SYMBOLS: ") symbolsLine
-        dataLine = lines input !! 1
+        positionStr = drop (length "POSITION: ") positionLine
         dataStr = drop (length "DATA: ") dataLine
+
         codes = parseSymbols symbolsStr
-        decoded = huffmanDecode codes dataStr
+        position = read positionStr :: Int
+
+        decoded = applyDecompression functions codes position dataStr
     in decoded
 
 parseSymbols :: String -> [(Char, String)]
@@ -56,3 +67,27 @@ escapeChar '\r' = "\\r"
 escapeChar '\t' = "\\t"
 escapeChar '\\' = "\\\\"
 escapeChar c = [c]
+
+findLine :: String -> [String] -> String
+findLine prefix linesList = head [line | line <- linesList, prefix `isPrefixOf` line]
+    where
+        isPrefixOf pref str = take (length pref) str == pref
+
+parseFns :: String -> [String]
+parseFns fnsLine =
+    let fnsStr = drop (length "FNS: ") fnsLine
+    in splitBy ',' fnsStr
+
+splitBy :: Char -> String -> [String]
+splitBy _ [] = []
+splitBy delimiter str =
+    let (part, rest) = break (== delimiter) str
+    in part : if null rest then [] else splitBy delimiter (tail rest)
+
+applyDecompression :: [String] -> [(Char, String)] -> Int -> String -> String
+applyDecompression functions codes position dataStr =
+    let huffmanDecoded = huffmanDecode codes dataStr
+    in case functions of
+        ["BWT", "HUFFMAN"] -> inverseBWT position huffmanDecoded
+        ["HUFFMAN", "BWT"] -> inverseBWT position huffmanDecoded  -- Apply inverse BWT after Huffman
+        _ -> error "Unsupported function order"
