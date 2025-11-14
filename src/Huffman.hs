@@ -34,7 +34,3 @@ generateCodes tree = generateCodes' tree ""
 
 huffmanEncode :: HuffmanTree a -> [(a, String)]
 huffmanEncode = generateCodes
--- Example usage:
--- let trees = [Leaf 'a' 5, Leaf 'b' 9, Leaf 'c' 12, Leaf 'd' 13, Leaf 'e' 16, Leaf 'f' 45]
--- huffmanEncode trees
--- Output: [('f',"0"),('c',"100"),('d',"101"),('a',"1100"),('b',"1101"),('e',"111")]
