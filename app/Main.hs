@@ -9,10 +9,12 @@ main = do
     case args of
         ["compress", input, output] -> do
             content <- readFile input
-            putStrLn $ compress content output
+            result <- compress content output
+            putStrLn result
         ["decompress", input, output] -> do
             content <- readFile input
-            putStrLn $ decompress content output
+            result <- decompress content output
+            putStrLn result
         _ -> do
             putStrLn "Usage:"
             putStrLn "  haskell-encoding compress <input> <output>"

@@ -3,8 +3,8 @@ module Compression where
 import Huffman (HuffmanTree(..), huffmanEncode, buildHuffmanTree)
 import Data.List (group, sort)
 
-compress :: String -> FilePath -> String
-compress input path =
+compress :: String -> FilePath -> IO String
+compress input path = do
     let
         freqList = map (\xs -> (head xs, length xs)) . group . sort $ input
         leaves = [Leaf c f | (c, f) <- freqList]
@@ -15,7 +15,9 @@ compress input path =
             Nothing -> error "Character not found in Huffman codes"
         encoded = concatMap lookupCode input
         symbolsTable = concatMap (\(c, code) -> [c] ++ ":" ++ code ++ ",") codes
-    in "SYMBOLS: " ++ init symbolsTable ++ "\nDATA: " ++ encoded
+        result = "SYMBOLS: " ++ init symbolsTable ++ "\nDATA: " ++ encoded
+    writeFile path result
+    return result
 
-decompress :: String -> FilePath -> String
-decompress input path = "Decompression not implemented yet"
+decompress :: String -> FilePath -> IO String
+decompress input path = return "Decompression not implemented yet"
