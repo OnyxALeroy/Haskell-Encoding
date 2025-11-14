@@ -2,13 +2,6 @@ module Huffman where
 
 data HuffmanTree a = Leaf a Int
     | Node (HuffmanTree a) (HuffmanTree a) Int
-    deriving (Show, Eq)
-
-instance (Ord a) => Ord (HuffmanTree a) where
-    compare (Leaf _ w1) (Leaf _ w2) = compare w1 w2
-    compare (Leaf _ w1) (Node _ _ w2) = compare w1 w2
-    compare (Node _ _ w1) (Leaf _ w2) = compare w1 w2
-    compare (Node _ _ w1) (Node _ _ w2) = compare w1 w2
 
 weight :: HuffmanTree a -> Int
 weight (Leaf _ w) = w
