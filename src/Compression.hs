@@ -3,8 +3,8 @@ module Compression where
 import Huffman (HuffmanTree(..), huffmanEncode, buildHuffmanTree)
 import Data.List (group, sort)
 
-compress :: String -> FilePath -> IO String
-compress input path = do
+compress :: String -> String
+compress input =
     let
         freqList = map (\xs -> (head xs, length xs)) . group . sort $ input
         leaves = [Leaf c f | (c, f) <- freqList]
@@ -16,8 +16,7 @@ compress input path = do
         encoded = concatMap lookupCode input
         symbolsTable = concatMap (\(c, code) -> [c] ++ ":" ++ code ++ ",") codes
         result = "SYMBOLS: " ++ init symbolsTable ++ "\nDATA: " ++ encoded
-    writeFile path result
-    return result
+    in result
 
-decompress :: String -> FilePath -> IO String
-decompress input path = return "Decompression not implemented yet"
+decompress :: String -> String
+decompress input = "Decompression not implemented yet"
