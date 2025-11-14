@@ -25,23 +25,22 @@ decompress input =
         symbolsStr = drop (length "SYMBOLS: ") symbolsLine
         dataLine = lines input !! 1
         dataStr = drop (length "DATA: ") dataLine
-        symbolPairs = parseSymbols symbolsStr
-        codes = [(c, code) | (code, c) <- symbolPairs]
+        codes = parseSymbols symbolsStr
         decoded = huffmanDecode codes dataStr
     in decoded
 
-parseSymbols :: String -> [(String, Char)]
+parseSymbols :: String -> [(Char, String)]
 parseSymbols "" = []
 parseSymbols str =
     let (symbolPair, rest) = parseSymbolPair str
     in symbolPair : parseSymbols (drop 1 rest)
 
-parseSymbolPair :: String -> ((String, Char), String)
+parseSymbolPair :: String -> ((Char, String), String)
 parseSymbolPair str =
     let (escapedChar, afterColon) = break (== ':') str
         char = unescapeChar escapedChar
         (code, afterComma) = break (== ',') (tail afterColon)
-    in ((code, char), afterComma)
+    in ((char, code), afterComma)
 
 unescapeChar :: String -> Char
 unescapeChar "\\n" = '\n'

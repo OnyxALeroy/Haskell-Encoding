@@ -38,11 +38,10 @@ huffmanEncode = generateCodes
 huffmanDecode :: [(a, String)] -> String -> [a]
 huffmanDecode codes = decodeHelper
     where
-        codeMap = foldr (\(c, code) acc -> acc ++ [(code, c)]) [] codes
         decodeHelper "" = []
-        decodeHelper str = let (code, rest) = findCode str codeMap in code : decodeHelper rest
+        decodeHelper str = let (code, rest) = findCode str codes in code : decodeHelper rest
         findCode _ [] = error "No matching code found"
-        findCode s ((code, c):xs)
-            | code `isPrefixOf` s = (c, drop (length code) s)
+        findCode s ((symbole, code):xs)
+            | code `isPrefixOf` s = (symbole, drop (length code) s)
             | otherwise = findCode s xs
         isPrefixOf prefix str = take (length prefix) str == prefix
