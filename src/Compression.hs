@@ -14,7 +14,8 @@ compress input path =
             Just code -> code
             Nothing -> error "Character not found in Huffman codes"
         encoded = concatMap lookupCode input
-    in encoded
+        symbolsTable = concatMap (\(c, code) -> [c] ++ ":" ++ code ++ ",") codes
+    in "SYMBOLS: " ++ init symbolsTable ++ "\nDATA: " ++ encoded
 
 decompress :: String -> FilePath -> String
 decompress input path = "Decompression not implemented yet"
