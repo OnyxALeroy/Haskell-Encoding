@@ -20,6 +20,22 @@ compress input =
         result = "FNS: BWT,HUFFMAN\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ encoded
     in result
 
+compressReverse :: String -> String
+compressReverse input =
+    let
+        freqList = map (\xs -> (head xs, length xs)) . group . sort $ input
+        leaves = [Leaf c f | (c, f) <- freqList]
+        tree = buildHuffmanTree leaves
+        codes = huffmanEncode tree
+        lookupCode c = case lookup c codes of
+            Just code -> code
+            Nothing -> error "Character not found in Huffman codes"
+        huffmanEncoded = concatMap lookupCode input
+        (bwtPos, bwtOutput) = bwTransform huffmanEncoded
+        symbolsTable = concatMap (\(c, code) -> escapeChar c ++ ":" ++ code ++ ",") codes
+        result = "FNS: HUFFMAN,BWT\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ bwtOutput
+    in result
+
 decompress :: String -> String
 decompress input =
     let
@@ -86,8 +102,9 @@ splitBy delimiter str =
 
 applyDecompression :: [String] -> [(Char, String)] -> Int -> String -> String
 applyDecompression functions codes position dataStr =
-    let huffmanDecoded = huffmanDecode codes dataStr
-    in case functions of
-        ["BWT", "HUFFMAN"] -> inverseBWT position huffmanDecoded
-        ["HUFFMAN", "BWT"] -> inverseBWT position huffmanDecoded  -- Apply inverse BWT after Huffman
-        _ -> error "Unsupported function order"
+    foldl (\acc fn -> applySingleFunction fn codes position acc) dataStr (reverse functions)
+
+applySingleFunction :: String -> [(Char, String)] -> Int -> String -> String
+applySingleFunction "HUFFMAN" codes _ dataStr = huffmanDecode codes dataStr
+applySingleFunction "BWT" _ position dataStr = inverseBWT position dataStr
+applySingleFunction _ _ _ _ = error "Unsupported function"
