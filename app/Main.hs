@@ -1,6 +1,6 @@
 module Main where
 
-import Compression (compress, decompress, compressReverse)
+import Compression (compress, decompress)
 import BurrowsWheeler (bwTransform, inverseBWT)
 import System.Environment (getArgs)
 
@@ -17,12 +17,6 @@ main = do
         ["decompress", input, output] -> do
             content <- readFile input
             let result = decompress content
-            writeFile output result
-            putStrLn result
-
-        ["compress-reverse", input, output] -> do
-            content <- readFile input
-            let result = compressReverse content
             writeFile output result
             putStrLn result
 
