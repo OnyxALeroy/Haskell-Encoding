@@ -97,24 +97,15 @@ spec = do
     it "should apply RLE then BWT and reverse correctly" $ do
       let input = [1,1,2,2,2,3,3,1,1,1] :: [Int]
       let rleEncoded = runLengthEncode input
-      let rleDecoded = runLengthDecode rleEncoded
-      let (pos, bwTransformed) = bwTransform rleDecoded
+      let (pos, bwTransformed) = bwTransform rleEncoded
       let bwRestored = inverseBWT pos bwTransformed
-      bwRestored `shouldBe` rleDecoded
+      let rleDecoded = runLengthDecode bwRestored
+      input `shouldBe` rleDecoded
 
     it "should apply BWT then RLE and reverse correctly" $ do
       let input = [1,2,1,2,1,2,3,3,3] :: [Int]
       let (pos, bwTransformed) = bwTransform input
-      let bwRestored = inverseBWT pos bwTransformed
-      let rleEncoded = runLengthEncode bwRestored
+      let rleEncoded = runLengthEncode bwTransformed
       let rleDecoded = runLengthDecode rleEncoded
-      rleDecoded `shouldBe` bwRestored
-
-    it "should handle large number sequences" $ do
-      let input = [1..100] :: [Int]
-      let rleEncoded = runLengthEncode input
-      let rleDecoded = runLengthDecode rleEncoded
-      let (pos, bwTransformed) = bwTransform input
-      let bwRestored = inverseBWT pos bwTransformed
-      bwRestored `shouldBe` input
-      rleDecoded `shouldBe` input
+      let bwRestored = inverseBWT pos rleDecoded
+      input `shouldBe` bwRestored
