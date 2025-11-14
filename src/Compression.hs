@@ -2,38 +2,25 @@ module Compression where
 
 import Huffman (HuffmanTree(..), huffmanEncode, huffmanDecode, buildHuffmanTree)
 import BurrowsWheeler (bwTransform, inverseBWT)
+import RunLength (runLengthEncode, runLengthDecode)
 import Data.List (group, sort)
 
 compress :: String -> String
 compress input =
     let
         (bwtPos, bwtOutput) = bwTransform input
-        freqList = map (\xs -> (head xs, length xs)) . group . sort $ bwtOutput
+        rleEncoded = runLengthEncode bwtOutput
+        rleStr = concatMap (\(count, char) -> show count ++ "$" ++ [char]) rleEncoded
+        freqList = map (\xs -> (head xs, length xs)) . group . sort $ rleStr
         leaves = [Leaf c f | (c, f) <- freqList]
         tree = buildHuffmanTree leaves
         codes = huffmanEncode tree
         lookupCode c = case lookup c codes of
             Just code -> code
             Nothing -> error "Character not found in Huffman codes"
-        encoded = concatMap lookupCode bwtOutput
+        encoded = concatMap lookupCode rleStr
         symbolsTable = concatMap (\(c, code) -> escapeChar c ++ ":" ++ code ++ ",") codes
-        result = "FNS: BWT,HUFFMAN\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ encoded
-    in result
-
-compressReverse :: String -> String
-compressReverse input =
-    let
-        freqList = map (\xs -> (head xs, length xs)) . group . sort $ input
-        leaves = [Leaf c f | (c, f) <- freqList]
-        tree = buildHuffmanTree leaves
-        codes = huffmanEncode tree
-        lookupCode c = case lookup c codes of
-            Just code -> code
-            Nothing -> error "Character not found in Huffman codes"
-        huffmanEncoded = concatMap lookupCode input
-        (bwtPos, bwtOutput) = bwTransform huffmanEncoded
-        symbolsTable = concatMap (\(c, code) -> escapeChar c ++ ":" ++ code ++ ",") codes
-        result = "FNS: HUFFMAN,BWT\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ bwtOutput
+        result = "FNS: BWT,RLE,HUFFMAN\nSYMBOLS: " ++ init symbolsTable ++ "\nPOSITION: " ++ show bwtPos ++ "\nDATA: " ++ encoded
     in result
 
 decompress :: String -> String
@@ -107,4 +94,17 @@ applyDecompression functions codes position dataStr =
 applySingleFunction :: String -> [(Char, String)] -> Int -> String -> String
 applySingleFunction "HUFFMAN" codes _ dataStr = huffmanDecode codes dataStr
 applySingleFunction "BWT" _ position dataStr = inverseBWT position dataStr
+applySingleFunction "RLE" _ _ dataStr =
+    if '$' `elem` dataStr
+    then runLengthDecode (parseRLEPairs dataStr)
+    else dataStr
 applySingleFunction _ _ _ _ = error "Unsupported function"
+
+parseRLEPairs :: String -> [(Int, Char)]
+parseRLEPairs "" = []
+parseRLEPairs str =
+    let (numStr, rest) = break (== '$') str
+        count = read numStr :: Int
+        char = if null (tail rest) then error "Invalid RLE format" else head (tail rest)
+        remaining = drop 2 rest
+    in (count, char) : parseRLEPairs remaining
