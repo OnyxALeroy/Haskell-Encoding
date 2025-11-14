@@ -54,6 +54,7 @@ library
     exposed-modules:  Huffman
                     , BurrowsWheeler
                     , Compression
+                    , RunLength
     build-depends:    base ^>=4.17.2.0
                     , containers
                     , array
