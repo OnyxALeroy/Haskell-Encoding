@@ -1,9 +1,10 @@
+module BurrowsWheeler where
+
 import Data.List (sort)
 
 main :: IO ()
 main = do
-  let o = "ABEACADABEA"
-  let s = shifts o
+  let s = shifts "ABEACADABEA"
   putStrLn "Original: ABEACADABEA"
   putStrLn "Unsorted:"
   mapM_ print s
@@ -26,11 +27,3 @@ sortShifts xss = sort xss
 indexInSorted :: (Ord a, Eq a) => [a] -> [[a]] -> Int
 indexInSorted xs sorted =
   fromMaybe (-1) (elemIndex xs sorted)
-
-bwTransform :: Ord a => [a] -> [a]
-bwTransform xs =
-  let m      = shifts xs
-      sorted = sortShifts m
-      idx    = indexInSorted xs sorted
-      lasts  = map last sorted
-  in  idx : lasts
