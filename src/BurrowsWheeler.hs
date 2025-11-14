@@ -3,6 +3,8 @@ module BurrowsWheeler where
 import Data.List (sort, elemIndex)
 import Data.Maybe (fromMaybe)
 
+-- Encoding algorithm
+
 shiftRight :: [a] -> [a]
 shiftRight [] = []
 shiftRight xs =
@@ -27,3 +29,27 @@ bwTransform xs =
       idx    = indexInSorted xs sorted
       lasts  = map last sorted
   in  (idx + 1, lasts)
+
+-- Decoding algorithm
+
+emptyTable :: Int -> [[a]]
+emptyTable n = replicate n []
+
+prependColumn :: [a] -> [[a]] -> [[a]]
+prependColumn col table = zipWith (:) col table
+
+step :: Ord a => [a] -> [[a]] -> [[a]]
+step lastCol table =
+    let newTable = prependColumn lastCol table
+    in  sort newTable
+
+reconstructTable :: Ord a => [a] -> [[a]]
+reconstructTable lastCol =
+    let n = length lastCol
+        initial = emptyTable n
+    in  iterate (step lastCol) initial !! n
+
+inverseBWT :: Ord a => Int -> [a] -> [a]
+inverseBWT idx lastCol =
+    let table = reconstructTable lastCol
+    in  table !! (idx - 1)
