@@ -2,8 +2,6 @@ module Main where
 
 import Compression (compress, decompress)
 import System.Environment (getArgs)
-import System.IO (hGetContents, stdin)
-import Data.List (intercalate)
 
 main :: IO ()
 main = do
@@ -13,7 +11,7 @@ main = do
             content <- readFile input
             putStrLn $ compress content output
         ["decompress", input, output] -> do
-            content <- readFile file
+            content <- readFile input
             putStrLn $ decompress content output
         _ -> do
             putStrLn "Usage:"
