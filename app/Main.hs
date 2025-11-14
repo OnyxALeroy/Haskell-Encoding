@@ -1,7 +1,6 @@
 module Main where
 
 import Compression (compress, decompress)
-import BurrowsWheeler (bwTransform, inverseBWT)
 import System.Environment (getArgs)
 
 main :: IO ()
