@@ -20,19 +20,7 @@ main = do
             writeFile output result
             putStrLn result
 
-        ["bwt", input] -> do
-            let (idx, lastCol) = bwTransform input
-            putStrLn (show idx ++ " " ++ lastCol)
-
-        ["rbwt", idxStr, lastCol] -> do
-            let idx = read idxStr :: Int
-            let result = inverseBWT idx lastCol
-            putStrLn result
-
         _ -> do
             putStrLn "Usage:"
             putStrLn "  haskell-encoding compress <input> <output>"
-            putStrLn "  haskell-encoding compress-reverse <input> <output>"
             putStrLn "  haskell-encoding decompress <input> <output>"
-            putStrLn "  haskell-encoding bwt <string>"
-            putStrLn "  haskell-encoding rbwt <int> <string>"
