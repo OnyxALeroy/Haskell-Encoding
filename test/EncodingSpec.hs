@@ -6,6 +6,10 @@ import BurrowsWheeler (bwTransform, inverseBWT)
 import Huffman (HuffmanTree(..), huffmanEncode, huffmanDecode, buildHuffmanTree)
 import Data.List (group, sort)
 
+-- local enum type for testing
+data ABC = A | B | C
+  deriving (Show, Eq, Ord, Enum, Bounded)
+
 spec :: Spec
 spec = do
   describe "Run Length encoding with numbers" $ do
@@ -109,3 +113,30 @@ spec = do
       let rleDecoded = runLengthDecode rleEncoded
       let bwRestored = inverseBWT pos rleDecoded
       input `shouldBe` bwRestored
+
+  describe "BWT with Enum types" $ do
+    it "should encode and decode a list of Ordering" $ do
+      let input = [LT, EQ, GT, LT, EQ] :: [Ordering]
+      let (idx, lastCol) = bwTransform input
+      inverseBWT idx lastCol `shouldBe` input
+
+    it "should encode and decode a list of custom Enum type" $ do
+      let input = [A, B, C, A, B]
+      let (idx, lastCol) = bwTransform input
+      inverseBWT idx lastCol `shouldBe` input
+
+  describe "Polymorphic BWT" $ do
+    it "should encode and decode a list of Ints" $ do
+      let input = [3,1,4,1,5,9] :: [Int]
+      let (idx, lastCol) = bwTransform input
+      inverseBWT idx lastCol `shouldBe` input
+
+    it "should encode and decode a list of Bools" $ do
+      let input = [True, False, True, True, False] :: [Bool]
+      let (idx, lastCol) = bwTransform input
+      inverseBWT idx lastCol `shouldBe` input
+
+    it "should encode and decode a list of tuples" $ do
+      let input = [(1,'a'), (2,'b'), (1,'a')] :: [(Int,Char)]
+      let (idx, lastCol) = bwTransform input
+      inverseBWT idx lastCol `shouldBe` input
